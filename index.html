@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Filip X Kendama</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --accent-primary: #00ff88; /* Neon Green */
+            --accent-secondary: #00ccff; /* Neon Blue */
+            --text-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            overscroll-behavior-y: none; /* Prevent bounce effect */
+        }
+
+        /* Background Particles */
+        .bg-particle {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            opacity: 0.4;
+            transition: transform 0.2s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+        }
+
+        .p1 { width: 300px; height: 300px; background: var(--accent-primary); top: -100px; left: -100px; }
+        .p2 { width: 250px; height: 250px; background: var(--accent-secondary); bottom: 10%; right: -50px; }
+        .p3 { width: 150px; height: 150px; background: #ff0055; top: 40%; left: 20%; }
+
+        /* Permission Overlay */
+        #permission-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            color: #000;
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        /* Layout */
+        main {
+            padding: 20px;
+            padding-bottom: 100px;
+            max-width: 600px; /* Mobile optimized constraint */
+            margin: 0 auto;
+        }
+
+        section {
+            min-height: 70vh; /* Each section takes mostly full screen */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px; /* For 3D tilts */
+            margin-bottom: 50px;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        h2 { margin-bottom: 10px; }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 30px;
+        }
+
+        /* Cards & Elements */
+        .dynamic-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 20px 0;
+            transform-style: preserve-3d;
+            width: 100%;
+        }
+
+        .icon-box {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-secondary);
+            text-align: center;
+            filter: drop-shadow(0 0 10px var(--accent-secondary));
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #333, #111);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-img i {
+            font-size: 4rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .floating-shape {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* --- NEW SHAPES & SECTIONS --- */
+        
+        /* Skewed Containers */
+        .skewed-container {
+            transform: skewY(-5deg);
+            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.1));
+            border-radius: 20px;
+            padding: 40px 20px;
+            width: 100%;
+            margin: 40px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .skewed-content {
+            transform: skewY(5deg); /* Un-skew content */
+        }
+
+        .skill-bar-container {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .skill-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            width: 0; /* Animated via JS */
+            border-radius: 10px;
+            position: relative;
+        }
+
+        /* Hex/Circle Grid */
+        .trick-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px; /* Increased gap */
+            margin-top: 50px; /* Increased top margin to avoid overlap with title */
+            padding-bottom: 20px;
+        }
+
+        .trick-bubble {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--accent-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.7rem;
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.2);
+            /* Removed transition: transform 0.3s; to let GSAP handle it */
+        }
+
+        .trick-bubble i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--accent-primary);
+        }
+
+        /* Layered Photo Section */
+        .layered-photo-container {
+            position: relative;
+            width: 300px; /* Adjust based on image aspect ratio */
+            height: 400px; /* Adjust based on image aspect ratio */
+            margin: 0 auto; /* Removed vertical margin for pinned logic */
+            perspective: 1000px;
+            /* Create space for the border */
+            padding: 5px; 
+        }
+
+        /* Square Animated Border Glow */
+        .layered-photo-container::before {
+            content: '';
+            position: absolute;
+            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-primary));
+            background-size: 400% 400%;
+            z-index: -1;
+            animation: gradientBorder 3s ease infinite;
+            /* Square corners as requested */
+            border-radius: 0; 
+        }
+        
+        /* Inner black background to mask the gradient center */
+        .layered-photo-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-color);
+            z-index: 0;
+        }
+
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .photo-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: transform 0.1s ease-out; /* For smooth gyro movement */
+            will-change: transform, opacity;
+            z-index: 1; /* Above the black background */
+        }
+
+        .layer-1 { background-image: url('01.png'); z-index: 1; }
+        .layer-2 { background-image: url('02.png'); z-index: 2; } /* Middle layer */
+        .layer-3 { background-image: url('03.png'); z-index: 3; }
+
+        /* Motto Section */
+        .motto-text {
+            font-size: 2rem;
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.3;
+            background: linear-gradient(to bottom, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 20px;
+            border-left: 5px solid var(--accent-primary);
+            border-right: 5px solid var(--accent-secondary);
+        }
+
+
+        /* Utilities */
+        .highlight { color: var(--accent-primary); font-weight: bold; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: -90px; /* Moved lower from 30px */
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+            40% {transform: translateX(-50%) translateY(-10px);}
+            60% {transform: translateX(-50%) translateY(-5px);}
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Setup Permission for Gyro -->
+    <div id="permission-overlay">
+        <div style="font-size: 3rem; margin-bottom: 20px;">✨</div>
+        <h2>Filip X Kendama</h2>
+        <p>Ești pregătit să descoperi magia Kendamei alături de Filip?</p>
+        <button class="start-btn" onclick="startExperience()">START</button>
+    </div>
+
+    <!-- Background Particles (Parallax Targets) -->
+    <div class="bg-particle p1" data-speed="20"></div>
+    <div class="bg-particle p2" data-speed="-15"></div>
+    <div class="bg-particle p3" data-speed="10"></div>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero">
+            <div class="content-wrapper reveal-wrapper">
+                <div class="gyro-target" data-tilt="15">
+                    <h1 class="hero-title">FILIP<br><span style="font-size:0.5em; -webkit-text-stroke: 1px white; color: transparent;">X</span><br>KENDAMA</h1>
+                </div>
+                <p class="hero-subtitle">DEXTERITATE • VITEZĂ • FUN</p>
+                <div class="scroll-indicator">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="about">
+            <div class="dynamic-card reveal-wrapper gyro-target" data-tilt="5">
+                <div class="profile-img">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <h2>Cine este Filip?</h2>
+                <div style="height: 2px; width: 50px; background: var(--accent-primary); margin: 15px auto;"></div>
+                <p>
+                    Filip este o forță a naturii de <span class="highlight">7 ani</span>. 
+                    Un băiat extrem de energic și agil, care transformă orice loc de joacă în propriul său parkour.
+                </p>
+                <p>
+                    Când nu aleargă, mâinile lui lucrează magic. Îndemânarea lui este legendară printre prieteni.
+                </p>
+                
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">7</div>
+                        <div class="stat-label">Ani</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Energie</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kendama Section -->
+        <section id="kendama">
+            <div class="dynamic-card reveal-wrapper gyro-target" data-tilt="8">
+                <div class="icon-box">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <h2>Maestrul Kendama</h2>
+                <p>
+                    Nu este doar o jucărie, este o extensie a brațului său. Filip știe <span class="highlight">nenumărate trick-uri</span> care te vor lăsa cu gura căscată.
+                </p>
+                <ul style="list-style: none; text-align: left; margin: 20px 0; padding-left: 10px;">
+                    <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color: var(--accent-primary); margin-right: 10px;"></i> Big Cup & Small Cup</li>
+                    <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color: var(--accent-primary); margin-right: 10px;"></i> Spike Landing</li>
+                    <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color: var(--accent-primary); margin-right: 10px;"></i> Airplane Mode</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Abilitati Speciale (Skewed) -->
+        <section id="skills">
+            <div class="skewed-container reveal-wrapper gyro-target" data-tilt="10">
+                <div class="skewed-content">
+                    <h2>Abilități Speciale</h2>
+                    <p style="margin-bottom: 30px;">Statistici live din timpul jocului</p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Viteză de Reacție</span>
+                            <span>95%</span>
+                        </div>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar-fill" style="width: 95%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Precizie Spike</span>
+                            <span>88%</span>
+                        </div>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar-fill" style="width: 88%;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Creativitate</span>
+                            <span>100%</span>
+                        </div>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section id="benefits">
+            <div class="content-wrapper reveal-wrapper">
+                <div class="icon-box" style="color: var(--accent-primary);">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h2>De ce Kendama?</h2>
+                <p>Kendama nu e doar distracție. Te ajută să devii un ninja al coordonării!</p>
+                
+                <div class="dynamic-card gyro-target" data-tilt="3" style="margin-top: 30px; background: rgba(0, 255, 136, 0.1); border-color: var(--accent-primary);">
+                    <h3><i class="fa-solid fa-bolt"></i> Reflexe</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 0;">Îți antrenează creierul și mâinile să reacționeze instantaneu.</p>
+                </div>
+
+                <div class="dynamic-card gyro-target" data-tilt="3" style="margin-top: 15px; background: rgba(0, 204, 255, 0.1); border-color: var(--accent-secondary);">
+                    <h3><i class="fa-regular fa-face-smile-beam"></i> Fun</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 0;">Perfect pentru pauzele de la școală sau ieșirile cu prietenii.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Top Tricks (Bubbles) -->
+        <section id="tricks">
+            <div class="reveal-wrapper">
+                <h2>Top Scheme</h2>
+                <p style="font-size:0.9rem; text-align:center; margin-bottom: 30px;">Favoritele lui Filip</p> <!-- Added margin-bottom -->
+                <div class="trick-grid">
+                    <div class="trick-bubble gyro-target" data-tilt="15">
+                        <i class="fa-solid fa-earth-europe"></i>
+                        <span>Around the World</span>
+                    </div>
+                    <div class="trick-bubble gyro-target" data-tilt="15" style="transform: translateY(20px);">
+                        <i class="fa-solid fa-plane-up"></i>
+                        <span>Airplane</span>
+                    </div>
+                    <div class="trick-bubble gyro-target" data-tilt="15">
+                        <i class="fa-solid fa-tower-observation"></i>
+                        <span>Lighthouse</span>
+                    </div>
+                    <div class="trick-bubble gyro-target" data-tilt="15" style="transform: translateY(20px);">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Juggling</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Layered Photo Reveal -->
+        <section id="photo-reveal" style="min-height: 100vh; padding-top: 0;"> <!-- Removed default padding to help fit -->
+            <div class="reveal-wrapper" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div style="margin-bottom: 20px;">
+                    <h2>Play Global Spike</h2>
+                    <p style="text-align:center; font-size: 0.9rem;">Filip & CRBL</p>
+                </div>
+                
+                <div class="layered-photo-container">
+                    <div class="photo-layer layer-1"></div>
+                    <div class="photo-layer layer-2"></div>
+                    <div class="photo-layer layer-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Motto -->
+        <section id="motto">
+            <div class="reveal-wrapper gyro-target" data-tilt="5">
+                <div class="motto-text">
+                    "Nu există 'nu pot', există doar 'încă nu am exersat destul'."
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <section id="footer" style="min-height: 30vh;">
+            <div class="reveal-wrapper">
+                <h2>Arată-le prietenilor!</h2>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 2.5rem; color: #25D366;"></i>
+                    <i class="fa-brands fa-instagram" style="font-size: 2.5rem; color: #E1306C;"></i>
+                    <i class="fa-brands fa-tiktok" style="font-size: 2.5rem; color: #00f2ea;"></i>
+                </div>
+                <p style="margin-top: 30px; font-size: 0.8rem; opacity: 0.5;">Designed for Filip X Kendama</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Intro / Permission Logic
+        function startExperience() {
+            // Request permission for iOS 13+ devices
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            initGyro();
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Non-iOS 13+ devices
+                initGyro();
+            }
+
+            // Fade out overlay
+            gsap.to("#permission-overlay", {
+                opacity: 0, 
+                duration: 0.8, 
+                onComplete: () => document.getElementById("permission-overlay").style.display = "none"
+            });
+        }
+
+        // 2. Gyroscope / Accelerometer Logic
+        function initGyro() {
+            window.addEventListener('deviceorientation', (event) => {
+                const tiltX = event.gamma; // Left/Right tilt (-90 to 90)
+                const tiltY = event.beta;  // Front/Back tilt (-180 to 180)
+
+                // Limit the tilt values to avoid extreme transformations
+                const x = Math.min(Math.max(tiltX, -40), 40);
+                const y = Math.min(Math.max(tiltY - 45, -40), 40); // Subtract 45 assuming user holds phone at 45deg
+
+                // Animate Background Particles (Parallax)
+                document.querySelectorAll('.bg-particle').forEach(el => {
+                    const speed = el.getAttribute('data-speed');
+                    gsap.to(el, {
+                        x: x * speed * 0.1,
+                        y: y * speed * 0.1,
+                        duration: 1,
+                        ease: "power2.out"
+                    });
+                });
+
+                // Animate Cards (3D Tilt effect)
+                document.querySelectorAll('.gyro-target').forEach(el => {
+                    const intensity = el.getAttribute('data-tilt') || 5;
+                    gsap.to(el, {
+                        rotationY: x * (intensity / 20),
+                        rotationX: -y * (intensity / 20),
+                        x: x * (intensity / 10),
+                        y: y * (intensity / 10),
+                        duration: 0.5,
+                        ease: "power1.out"
+                    });
+                });
+
+                // Layered Photo Parallax (Opposite direction for middle layer)
+                const layer1 = document.querySelector('.layer-1');
+                const layer2 = document.querySelector('.layer-2');
+                const layer3 = document.querySelector('.layer-3');
+
+                if(layer1 && layer2 && layer3) {
+                    // Layer 1 (Base): Slight movement
+                    gsap.to(layer1, { x: x * 0.5, duration: 0.5 });
+                    
+                    // Layer 2 (Middle): OPPOSITE movement
+                    gsap.to(layer2, { x: -x * 1.2, duration: 0.5 }); // Negative multiplier for opposite direction
+
+                    // Layer 3 (Top): Normal movement, slightly more intense
+                    gsap.to(layer3, { x: x * 0.8, duration: 0.5 });
+                }
+            });
+        }
+
+        // 3. Scroll Animations (Appear -> Stay -> Disappear BEFORE Exit)
+        const items = gsap.utils.toArray('.reveal-wrapper');
+
+        items.forEach((item, i) => {
+            // Check if this is the photo section
+            if (item.querySelector('.layered-photo-container')) {
+                const l1 = item.querySelector('.layer-1');
+                const l2 = item.querySelector('.layer-2');
+                const l3 = item.querySelector('.layer-3');
+
+                // Custom Timeline without Pinning (Natural Scroll)
+                const photoTl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top 80%", // Start animation when section enters view
+                        end: "center center", // Finish animation when section is centered
+                        scrub: 1
+                    }
+                });
+
+                // Animation Sequence: Fast stacking as you scroll up
+                photoTl.fromTo(item, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5 }) // Container appears
+                     .fromTo(l1, { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 0.5 }, "<") // Layer 1
+                     .fromTo(l2, { opacity: 0, scale: 1.3, y: 50 }, { opacity: 1, scale: 1, y: 0, duration: 0.5 }, "-=0.1") // Layer 2 overlaps quickly
+                     .fromTo(l3, { opacity: 0, scale: 1.3, y: 50 }, { opacity: 1, scale: 1, y: 0, duration: 0.5 }, "-=0.1"); // Layer 3 overlaps quickly
+
+                // REMOVED Exit Animation for Photos as requested
+                // They will stay visible now
+                
+            } else {
+                // Standard animation for other sections
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top bottom", 
+                        end: "bottom top",
+                        scrub: 1
+                    }
+                });
+
+                tl.fromTo(item, 
+                    { opacity: 0, scale: 0.8, y: 100, rotation: 5 }, 
+                    { opacity: 1, scale: 1, y: 0, rotation: 0, ease: "power2.out", duration: 1 } // Enter
+                )
+                .to(item, 
+                    { opacity: 1, y: 0, duration: 1 } // Stay visible
+                )
+                .to(item, 
+                    { opacity: 0, scale: 1.1, y: -100, filter: "blur(10px)", duration: 1 } // Exit
+                );
+            }
+        });
+
+        // Micro-animations for icons
+        gsap.utils.toArray('.fa-solid, .fa-brands').forEach(icon => {
+            gsap.to(icon, {
+                rotation: "random(-15, 15)",
+                duration: "random(1.5, 3)",
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        });
+
+        // 4. Sequential Pulse Animation for Trick Bubbles
+        const bubbles = gsap.utils.toArray('.trick-bubble');
+        
+        // Create a continuous looping timeline for the pulse effect
+        const pulseTl = gsap.timeline({
+            repeat: -1,
+            defaults: { ease: "power1.inOut" }
+        });
+
+        bubbles.forEach((bubble, i) => {
+            pulseTl.to(bubble, {
+                scale: 1.15,
+                boxShadow: "0 0 30px rgba(0, 255, 136, 0.8)", // Stronger glow
+                borderColor: "var(--accent-primary)",
+                duration: 0.5,
+                yoyo: true,
+                repeat: 1
+            }, i * 0.5); // Stagger start times based on index (0s, 0.5s, 1.0s, etc.)
+        });
+
+    </script>
+</body>
+</html>
